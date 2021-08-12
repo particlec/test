@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>parent</artifactId>
+        <groupId>com.utyun.utone</groupId>
+        <version>1.0.4</version>
+    </parent>
+
+    <groupId>com.utyun.smarthome</groupId>
+    <artifactId>home-backend</artifactId>
+    <version>1.0.0</version>
+    <name>home-backend</name>
+    <description>utyun home-backend</description>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
+        <!-- 仓库地址 -->
+        <registryUrl>reg.utcook.com</registryUrl>
+        <!--注意仓库名 -->
+        <registryProject>pub</registryProject>
+        <!-- docker iamge名 -->
+        <dockerImageName>${project.artifactId}</dockerImageName>
+        <!-- docker iamge tag -->
+        <dockerImageTag>${project.version}</dockerImageTag>
+        <!-- docker image 完整url -->
+        <dockerImageUrl>${registryUrl}/${registryProject}/${dockerImageName}:${dockerImageTag}</dockerImageUrl>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <artifactId>utone-core</artifactId>
+            <groupId>com.utyun.utone</groupId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <artifactId>utone-oauth</artifactId>
+            <groupId>com.utyun.utone</groupId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>CentralRepository</name>
+            <url>https://nexus.utcook.com/repository/maven-public/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>nexus</id>
+            <name>Nexus Repository</name>
+            <url>https://nexus.utcook.com/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <!--snapshots默认是关闭的,需要开启  -->
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <dockerHost>http://192.168.105.71:2375</dockerHost>
+                    <serverId>dockerId</serverId>
+                    <imageName>${dockerImageUrl}</imageName>
+                    <baseImage>openjdk:8-jdk-alpine</baseImage>
+                    <entryPoint>["java", "-Xdebug", "-Xnoagent", "-Djava.compiler=NONE","-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=n", "-Duser.timezone=GMT+08","-Djava.security.egd=file:/dev/./urandom","-Djava.security.auth.login.config=/data/conf/kafka_client_jaas.conf", "-jar","/${project.build.finalName}.jar"]</entryPoint>
+                    <resources>
+                        <resource>
+                            <targetPath>/</targetPath>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>tag-image</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>tag</goal>
+                        </goals>
+                        <configuration>
+                            <image>${dockerImageUrl}</image>
+                            <newName>
+                                ${dockerImageUrl}
+                            </newName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>push-image</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>push</goal>
+                        </goals>
+                        <configuration>
+                            <imageName>
+                                ${dockerImageUrl}
+                            </imageName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
