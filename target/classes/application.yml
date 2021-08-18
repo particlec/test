@@ -1,0 +1,17 @@
+ut-core:
+  port: 19192 #应用端口号
+  name: home-backend #应应用名
+  swagger:
+    description: 家居后台——接口文档
+    version: 1.0.0
+
+#Apollo配置信息
+app:
+  id: home-backend-service
+apollo:
+  bootstrap:
+    enabled: true
+    namespaces: home.yml
+    eagerLoad:
+      enabled: false
+

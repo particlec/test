@@ -1,0 +1,9 @@
+ut-core:
+  zipkin: http://zipkin:19004 #zipkin地址
+  zipkin-enabled: false
+
+utcloud:
+  service-url:
+    compileRuleData: http://127.0.0.1:8082/scene-middleware/rule/compileRuleData
+    updateVariables: http://127.0.0.1:8082/scene-middleware/notify/updateVariables
+
